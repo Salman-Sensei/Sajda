@@ -110,18 +110,15 @@ export async function fetchWeeklyProgress(personId) {
 
 export async function fetchGroupProgress() {
   if (!supabase) return mockGroupProgress
-  const since = new Date()
-  since.setDate(since.getDate() - 6)
+  // Fetch all prayer logs (no date filter) to show everyone with any data
   const { data, error } = await supabase
     .from('prayer_logs')
     .select('person_id, status, people(name)')
-    .gte('prayer_date', since.toISOString().slice(0, 10))
   if (error || !data) return []
 
   const byPerson = new Map()
   for (const row of data) {
     const name = row.people?.name
-    // Skip rows with null or empty names
     if (!name || name.trim() === '') continue
     if (!byPerson.has(name)) byPerson.set(name, { done: 0, total: 0 })
     const entry = byPerson.get(name)
